@@ -1,0 +1,76 @@
+CC = g++  
+TOOL_CXXFLAGS_NOOPT += -std=c++0x #-ggdb
+LIBS += -llibdft
+TOOL_CXXFLAGS += -g -Isrc/ -Wno-unused-but-set-variable -Wno-unused-but-set-variable
+
+LIB_SRC_DIR = src/
+TOOL_SRC_DIR = tools/
+
+LIB_ROOTS += liblibdft
+TOOL_ROOTS += taint_from_file_read nullpin #trace_routines sqlite_pintool
+
+$(OBJDIR)liblibdft$(LIB_SUFFIX): \
+        $(OBJDIR)libdft_api$(OBJ_SUFFIX) \
+        $(OBJDIR)libdft_analysis$(OBJ_SUFFIX) \
+        $(OBJDIR)syscall_desc$(OBJ_SUFFIX) \
+        $(OBJDIR)tagmap$(OBJ_SUFFIX) \
+        $(OBJDIR)libdft_instrument$(OBJ_SUFFIX)
+	$(ARCHIVER) $(OBJDIR)liblibdft$(LIB_SUFFIX) \
+        $(OBJDIR)tagmap$(OBJ_SUFFIX) $(OBJDIR)libdft_api$(OBJ_SUFFIX) \
+        $(OBJDIR)libdft_analysis$(OBJ_SUFFIX) \
+        $(OBJDIR)syscall_desc$(OBJ_SUFFIX) \
+        $(OBJDIR)libdft_instrument$(OBJ_SUFFIX) 
+
+$(OBJDIR)libdft_api$(OBJ_SUFFIX): $(LIB_SRC_DIR)libdft_api.c \
+        $(LIB_SRC_DIR)libdft_api.h $(LIB_SRC_DIR)branch_pred.h
+	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+$(OBJDIR)libdft_instrument$(OBJ_SUFFIX): $(LIB_SRC_DIR)libdft_instrument.c \
+        $(LIB_SRC_DIR)libdft_instrument.h $(LIB_SRC_DIR)branch_pred.h
+	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+$(OBJDIR)libdft_analysis$(OBJ_SUFFIX): $(LIB_SRC_DIR)libdft_analysis.c \
+        $(LIB_SRC_DIR)libdft_analysis.h $(LIB_SRC_DIR)branch_pred.h
+	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+$(OBJDIR)syscall_desc$(OBJ_SUFFIX): $(LIB_SRC_DIR)syscall_desc.c \
+        $(LIB_SRC_DIR)syscall_desc.h $(LIB_SRC_DIR)branch_pred.h
+	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+$(OBJDIR)tagmap$(OBJ_SUFFIX): $(LIB_SRC_DIR)tagmap.c $(LIB_SRC_DIR)tagmap.h \
+        $(LIB_SRC_DIR)branch_pred.h
+	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+# Build the intermediate object file.
+$(OBJDIR)taint_from_file_read$(OBJ_SUFFIX): $(TOOL_SRC_DIR)taint_from_file_read.c \
+        $(LIB_SRC_DIR)branch_pred.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $< 
+
+# Build the tool as a dll (shared object).
+$(OBJDIR)taint_from_file_read$(PINTOOL_SUFFIX): $(OBJDIR)taint_from_file_read$(OBJ_SUFFIX)
+	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) $(TOOL_LIBS) $(LIBS)
+
+# Build the intermediate object file.
+$(OBJDIR)nullpin$(OBJ_SUFFIX): $(TOOL_SRC_DIR)nullpin.c $(LIB_SRC_DIR)branch_pred.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $< 
+
+# Build the tool as a dll (shared object).
+$(OBJDIR)nullpin$(PINTOOL_SUFFIX): $(OBJDIR)nullpin$(OBJ_SUFFIX)
+	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) $(TOOL_LIBS) $(LIBS)
+
+# Build the intermediate object file.
+$(OBJDIR)trace_routines$(OBJ_SUFFIX): $(TOOL_SRC_DIR)trace_routines.c $(LIB_SRC_DIR)branch_pred.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $< 
+
+# Build the tool as a dll (shared object).
+$(OBJDIR)trace_routines$(PINTOOL_SUFFIX): $(OBJDIR)trace_routines$(OBJ_SUFFIX)
+	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) $(TOOL_LIBS) $(LIBS)
+
+# Build the intermediate object file.
+$(OBJDIR)sqlite_pintool$(OBJ_SUFFIX): $(TOOL_SRC_DIR)sqlite_pintool.c \
+        $(LIB_SRC_DIR)branch_pred.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $< 
+
+# Build the tool as a dll (shared object).
+$(OBJDIR)sqlite_pintool$(PINTOOL_SUFFIX): $(OBJDIR)sqlite_pintool$(OBJ_SUFFIX)
+	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) $(TOOL_LIBS) $(LIBS)

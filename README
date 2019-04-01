@@ -1,0 +1,25 @@
+Build instructions: 
+Download and untar Intel Pin. I've been working with version 3.2
+(https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.2-81205-gcc-linux.tar.gz),
+on linux, but more recent versions will probably also work. The
+executable pin is in the root directory. There are sample tools in
+source/tools/ that you can build by running make from that dir, but
+it's not necessary to use pin. 
+
+cd into the libdft_64 directory run make
+PIN_ROOT=/path/to/pin_root_dir
+
+This will create a directory called obj-intel64 if it doesn't exist
+and write the build objects to it. Pintools are built as shared
+objects, which are passed to pin as command line arguments.
+
+The file makefile reads config info from makefile.rules then calls the
+makefile in the Pin directory  To add/modify the build, the file to
+change is makefile.rules. The tools to build are defined by
+TOOL_ROOTS. To add another tool, you need to add rules on how to build
+it (there are examples in the file).
+
+To run a pintool: ~/path/to/pin_executable -t /path/to/pintool --
+path/to/application If the application is multithreaded, use
+'-follow-execv' to have Pin instrument all forked children.
+
