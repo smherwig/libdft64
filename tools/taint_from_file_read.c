@@ -110,7 +110,13 @@ post_read_hook(syscall_ctx_t *ctx, CONTEXT *pin_ctx, SYSCALL_STANDARD std)
 #endif
             instrumentFlag = 1;
             postPropFlag = 1;
+
+#if 0       /* SMHERWIG */
             CODECACHE_FlushCache();
+#endif
+            /* SMHERWIG added */
+            PIN_RemoveInstrumentation();
+
 #ifdef DEBUG
             printf("set instrument flag and cleared cache\n");
 #endif
@@ -263,8 +269,10 @@ VOID Fini(INT32 code, VOID *v)
     printLog("process %d finished\n", PIN_GetPid());
     //printPageTaints();
     printPageAndByteTaints();
+#if 0 /* SMHERWIG */
     printLog("space used by pin: %uB (%umb)\n", 
             PIN_MemoryAllocatedForPin(), (PIN_MemoryAllocatedForPin() >> 20));
+#endif
     PIN_ReleaseLock(&pin_lock);
 }
 
